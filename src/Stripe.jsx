@@ -82,9 +82,12 @@ const PaymentRequestButton = () => {
   
   const App = () => {
     return (
-      <Elements stripe={stripePromise}>
-        <PaymentRequestButton />
-      </Elements>
+      <>
+        <h1>Stripe Testing</h1>
+        <Elements stripe={stripePromise}>
+          <PaymentRequestButton />
+        </Elements>
+      </>
     );
   };
   
