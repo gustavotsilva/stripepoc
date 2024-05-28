@@ -1,0 +1,9 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/.well-known/*"
+  to = "/well-known/:splat"
+  status = 301
+  force = true
