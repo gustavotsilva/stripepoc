@@ -36,7 +36,8 @@ const PaymentRequestButton = () => {
         });
   
         pr.on('paymentmethod', async (event) => {
-          const response = await fetch('/.netlify/functions/create-subscription', {
+          //const response = await fetch('/.netlify/functions/create-subscription', {
+          const response = await fetch ('https://9000-idx-stripepoc-1716858474948.cluster-23wp6v3w4jhzmwncf7crloq3kw.cloudworkstations.dev:5173/functions/create-subscription', {  
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -50,8 +51,10 @@ const PaymentRequestButton = () => {
         
           if (subscription.error) {
             event.complete('fail');
+            console.log(subscription.error);
           } else {
             event.complete('success');
+            console.log(subscription.response);
             const { clientSecret, status } = subscription;
             if (status === 'requires_action') {
               stripe.confirmCardPayment(clientSecret).then((result) => {
