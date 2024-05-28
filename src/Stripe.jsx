@@ -36,7 +36,7 @@ const PaymentRequestButton = () => {
         });
   
         pr.on('paymentmethod', async (event) => {
-          const response = await fetch('/create-subscription', {
+          const response = await fetch('/.netlify/functions/create-subscription', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -45,9 +45,9 @@ const PaymentRequestButton = () => {
               paymentMethodId: event.paymentMethod.id,
             }),
           });
-          
+        
           const subscription = await response.json();
-          
+        
           if (subscription.error) {
             event.complete('fail');
           } else {

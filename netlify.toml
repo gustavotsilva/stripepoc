@@ -2,8 +2,11 @@
   publish = "dist"
   command = "npm run build"
 
+[functions]
+  directory = "functions"
+
 [[redirects]]
   from = "/.well-known/*"
   to = "/well-known/:splat"
-  status = 301
+  status = 200
   force = true
