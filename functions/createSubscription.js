@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-exports.handler = async function(event, context) {
+export async function handler(event, context) {
   if (event.httpMethod === 'POST') {
     const { paymentMethodId } = JSON.parse(event.body);
 
@@ -40,4 +40,4 @@ exports.handler = async function(event, context) {
           body: 'Method Not Allowed',
       };
   }
-};
+}
