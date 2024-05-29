@@ -37,7 +37,7 @@ const PaymentRequestButton = () => {
   
         pr.on('paymentmethod', async (event) => {
 
-          window.alert('here!');
+          window.alert(event.paymentMethod.id);
 
           const response = await fetch('/.netlify/functions/createSubscription', {
             headers: {
