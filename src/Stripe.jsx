@@ -36,20 +36,18 @@ const PaymentRequestButton = () => {
         });
   
         pr.on('paymentmethod', async (event) => {
-
-          window.alert('yo!');
-
-          const response = await fetch('/.netlify/functions/createSubscription', {
+          const response = await fetch('https://8888-idx-stripepoc-1716858474948.cluster-23wp6v3w4jhzmwncf7crloq3kw.cloudworkstations.dev/.netlify/functions/createSubscription', {
+            method: 'POST', // Specify the HTTP method as POST
             headers: {
-              'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              paymentMethodId: event.paymentMethod.id,
+                paymentMethodId: event.paymentMethod.id,
             }),
           });
         
           const subscription = await response.json();
-        
+
           window.alert(subscription);
 
           if (subscription.error) {
