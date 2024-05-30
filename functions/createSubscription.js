@@ -23,51 +23,72 @@ const findOrCreateCustomer = async (email, paymentMethodId) => {
   }
 };
 
+const createSubscriptionWithCoupon = async (paymentMethodId, email, couponCode) => {
+  try {
+      // Find or create a customer
+      const customer = await findOrCreateCustomer('gustavo.silva+stripepoc+test1@useorigin.com', paymentMethodId);
+
+      // Create a subscription with a 30-day free trial and a discount coupon
+      const subscription = await stripe.subscriptions.create({
+          customer: customer.id,
+          items: [{ price: 'price_1O7IxyCNtBYah15R4b07AA0h' }], // replace with your price ID
+          coupon: couponCode, // Add the coupon code here
+          trial_period_days: 30, // Set the trial period to 30 days
+          expand: ['latest_invoice.payment_intent'],
+      });
+
+      let clientSecret = null;
+      if (subscription.latest_invoice && subscription.latest_invoice.payment_intent) {
+          clientSecret = subscription.latest_invoice.payment_intent.client_secret;
+      }
+
+      return {
+          statusCode: 200,
+          headers: {
+              'Access-Control-Allow-Origin': '*', // Allow any origin
+              'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
+              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+          },
+          body: JSON.stringify({
+              clientSecret: clientSecret,
+              status: subscription.status,
+          }),
+      };
+  } catch (error) {
+      return {
+          statusCode: 400,
+          headers: {
+              'Access-Control-Allow-Origin': '*', // Allow any origin
+              'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
+              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+          },
+          body: JSON.stringify({
+              error: error.message,
+          }),
+      };
+  }
+};
+
 export async function handler(event, context) {
-  if (event.httpMethod === 'GET') {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+        statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*', // Allow any origin
+            'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+        },
+        body: '',
+    };
+  }
+  else if (event.httpMethod === 'GET') {
     return {
       statusCode: 200,
       body: 'Hello World',
     };
   }
   else if (event.httpMethod === 'POST') {
-    const { paymentMethodId } = JSON.parse(event.body);
-
-    try {
-        // Find or create a customer
-        const customer = await findOrCreateCustomer('gustavo.silva+stripepoc+test1@useorigin.com', paymentMethodId);
-
-        // Create a subscription
-        const subscription = await stripe.subscriptions.create({
-            customer: customer.id,
-            items: [{ price: 'price_1O7IxyCNtBYah15R4b07AA0h' }], // replace with your price ID
-            expand: ['latest_invoice.payment_intent'],
-            coupon: 'BrDoetW1', // Add the coupon code here
-            trial_period_days: 30, // Set the trial period to 30 days
-        });
-
-        let clientSecret = null;
-        if (subscription.latest_invoice && subscription.latest_invoice.payment_intent) {
-            clientSecret = subscription.latest_invoice.payment_intent.client_secret;
-        }
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                clientSecret: clientSecret,
-                status: subscription.status,
-            }),
-        };
-    } catch (error) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: error.message }),
-        };
-    }
-  } else {
-      return {
-          statusCode: 405, // Method Not Allowed
-          body: 'Method Not Allowed',
-      };
+    const { paymentMethodId, email, couponCode } = JSON.parse(event.body);
+    return await createSubscriptionWithCoupon(paymentMethodId, email, couponCode);
   }
 }

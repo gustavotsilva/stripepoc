@@ -36,7 +36,7 @@ const PaymentRequestButton = () => {
         });
   
         pr.on('paymentmethod', async (event) => {
-          const response = await fetch('https://8888-idx-stripepoc-1716858474948.cluster-23wp6v3w4jhzmwncf7crloq3kw.cloudworkstations.dev/.netlify/functions/createSubscription', {
+          const response = await fetch('/.netlify/functions/createSubscription', {
             method: 'POST', // Specify the HTTP method as POST
             headers: {
                 'Content-Type': 'application/json',
