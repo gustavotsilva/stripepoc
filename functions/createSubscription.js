@@ -1,35 +1,30 @@
-import stripePackage from 'stripe'; // Using 'import' for the Stripe package
-const stripe = stripePackage(process.env.STRIPE_SECRET_KEY); // Replace with your actual Stripe secret key
+import stripePackage from 'stripe';
+const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
 
 const findOrCreateCustomer = async (email, paymentMethodId) => {
-  // Search for an existing customer with the given email
   const customers = await stripe.customers.list({
     email: email,
     limit: 1,
   });
 
   if (customers.data.length > 0) {
-    // If customer exists, check and update the default payment method if necessary
     const customer = customers.data[0];
     const defaultPaymentMethod = customer.invoice_settings.default_payment_method;
 
     if (defaultPaymentMethod !== paymentMethodId) {
-        // Attach the new payment method to the customer
-        await stripe.paymentMethods.attach(paymentMethodId, {
-            customer: customer.id,
-        });
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: customer.id,
+      });
 
-        // Update the customer's default payment method
-        await stripe.customers.update(customer.id, {
-            invoice_settings: {
-            default_payment_method: paymentMethodId,
-            },
-        });
+      await stripe.customers.update(customer.id, {
+        invoice_settings: {
+          default_payment_method: paymentMethodId,
+        },
+      });
     }
 
     return customer;
   } else {
-    // If no customer exists, create a new customer
     const customer = await stripe.customers.create({
       payment_method: paymentMethodId,
       email: email,
@@ -37,21 +32,20 @@ const findOrCreateCustomer = async (email, paymentMethodId) => {
         default_payment_method: paymentMethodId,
       },
     });
+
     return customer;
   }
 };
 
 const createSubscriptionWithCoupon = async (paymentMethodId, email, couponCode) => {
   try {
-    // Find or create a customer
     const customer = await findOrCreateCustomer('gustavo.silva+stripepoc+test1@useorigin.com', paymentMethodId);
 
-    // Create a subscription with a 30-day free trial and a discount coupon
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [{ price: 'price_1O7IxyCNtBYah15R4b07AA0h' }], // replace with your price ID
-      coupon: couponCode, // Add the coupon code here
-      trial_period_days: 30, // Set the trial period to 30 days
+      items: [{ price: 'price_1O7IxyCNtBYah15R4b07AA0h' }],
+      coupon: couponCode,
+      trial_period_days: 30,
       expand: ['latest_invoice.payment_intent'],
     });
 
@@ -63,9 +57,9 @@ const createSubscriptionWithCoupon = async (paymentMethodId, email, couponCode) 
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Allow any origin
-        'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       },
       body: JSON.stringify({
         clientSecret: clientSecret,
@@ -76,9 +70,9 @@ const createSubscriptionWithCoupon = async (paymentMethodId, email, couponCode) 
     return {
       statusCode: 400,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Allow any origin
-        'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       },
       body: JSON.stringify({
         error: error.message,
@@ -92,9 +86,9 @@ export async function handler(event, context) {
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Allow any origin
-        'Access-Control-Allow-Headers': 'Content-Type', // Allow headers
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allow methods
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       },
       body: '',
     };
@@ -105,6 +99,7 @@ export async function handler(event, context) {
     };
   } else if (event.httpMethod === 'POST') {
     const { paymentMethodId, email, couponCode } = JSON.parse(event.body);
-    return await createSubscriptionWithCoupon(paymentMethodId, email, couponCode);
+    const response = await createSubscriptionWithCoupon(paymentMethodId, email, couponCode);
+    return response; // Ensure the response is returned
   }
 }
