@@ -50,6 +50,8 @@ const PaymentRequestButton = () => {
         
           const subscription = await response.json();
         
+          window.alert(subscription);
+
           if (subscription.error) {
             event.complete('fail');
             console.log(subscription.error);
@@ -87,7 +89,7 @@ const PaymentRequestButton = () => {
   const App = () => {
     return (
       <>
-        <h1>Stripe Testing</h1>
+        <h1>Stripe Testing 2</h1>
         <Elements stripe={stripePromise}>
           <PaymentRequestButton />
         </Elements>
