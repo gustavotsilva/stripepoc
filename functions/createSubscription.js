@@ -1,4 +1,5 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import stripePackage from 'stripe'; // Using 'import' for the Stripe package
+const stripe = stripePackage(process.env.STRIPE_SECRET_KEY); // Replace with your actual Stripe secret key
 
 const findOrCreateCustomer = async (email, paymentMethodId) => {
   // Search for an existing customer with the given email
