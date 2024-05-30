@@ -14,17 +14,17 @@ const findOrCreateCustomer = async (email, paymentMethodId) => {
     const defaultPaymentMethod = customer.invoice_settings.default_payment_method;
 
     if (defaultPaymentMethod !== paymentMethodId) {
-      // Update the customer's default payment method
-      await stripe.customers.update(customer.id, {
-        invoice_settings: {
-          default_payment_method: paymentMethodId,
-        },
-      });
+        // Attach the new payment method to the customer
+        await stripe.paymentMethods.attach(paymentMethodId, {
+            customer: customer.id,
+        });
 
-      // Also, attach the new payment method to the customer if it's not already attached
-      await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: customer.id,
-      });
+        // Update the customer's default payment method
+        await stripe.customers.update(customer.id, {
+            invoice_settings: {
+            default_payment_method: paymentMethodId,
+            },
+        });
     }
 
     return customer;
