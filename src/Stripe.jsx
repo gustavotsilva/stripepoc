@@ -37,14 +37,12 @@ const PaymentRequestButton = () => {
       pr.on('paymentmethod', async (event) => {
         try {
           const response = await fetch('/.netlify/functions/createSubscription', {
-            method: 'POST',
+            method: 'POST', // Specify the HTTP method as POST
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               paymentMethodId: event.paymentMethod.id,
-              email: event.payerEmail,  // Ensure to pass payer's email
-              couponCode: 'your-coupon-code',  // Replace with the actual coupon code
             }),
           });
 
@@ -75,6 +73,7 @@ const PaymentRequestButton = () => {
           console.error('Error in paymentmethod handler:', error);
           window.alert('An error occurred, please try again.');
         }
+
       });
     }
   }, [stripe]);
