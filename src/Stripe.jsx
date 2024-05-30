@@ -35,43 +35,45 @@ const PaymentRequestButton = () => {
       });
 
       pr.on('paymentmethod', async (event) => {
-        const response = await fetch('/.netlify/functions/createSubscription', {
-          method: 'POST', // Specify the HTTP method as POST
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            paymentMethodId: event.paymentMethod.id,
-          }),
-        });
+        try {
+          const response = await fetch('/.netlify/functions/createSubscription', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              paymentMethodId: event.paymentMethod.id,
+              email: event.payerEmail,  // Ensure to pass payer's email
+              couponCode: 'your-coupon-code',  // Replace with the actual coupon code
+            }),
+          });
 
-        const subscription = await response.json();
+          const subscription = await response.json();
 
-        if (subscription.error) {
-          event.complete('fail');
-          window.alert('Failed!');
-          console.log(subscription.error);
-        } else {
-          event.complete('success');
-          console.log(subscription.response);
-          const { clientSecret, status } = subscription;
-          if (status === 'requires_action') {
-            stripe.confirmCardPayment(clientSecret).then((result) => {
-              if (result.error) {
-                console.error(result.error);
-                window.alert('Payment confirmation failed!');
+          if (subscription.error) {
+            event.complete('fail');
+            window.alert('Subscription failed: ' + subscription.error);
+          } else {
+            const { clientSecret, status } = subscription;
+
+            if (status === 'requires_action') {
+              const confirmResult = await stripe.confirmCardPayment(clientSecret);
+              if (confirmResult.error) {
+                event.complete('fail');
+                window.alert('Payment confirmation failed: ' + confirmResult.error.message);
               } else {
-                console.log('Subscription successful!');
+                event.complete('success');
                 window.alert('Subscription successful!');
               }
-            }).catch(error => {
-              console.error(error);
-              window.alert('Payment confirmation failed!');
-            });
-          } else {
-            console.log('Subscription successful!');
-            window.alert('Subscription successful!');
+            } else {
+              event.complete('success');
+              window.alert('Subscription successful!');
+            }
           }
+        } catch (error) {
+          event.complete('fail');
+          console.error('Error in paymentmethod handler:', error);
+          window.alert('An error occurred, please try again.');
         }
       });
     }
